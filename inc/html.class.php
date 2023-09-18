@@ -1642,7 +1642,7 @@ JAVASCRIPT
             'types' => [
                'Project', 'Reminder', 'RSSFeed', 'KnowbaseItem',
                'ReservationItem', 'Report', 'MigrationCleaner',
-               'SavedSearch', 'Impact'
+               'SavedSearch'
             ]
          ],
          'plugins' => [
@@ -1653,7 +1653,7 @@ JAVASCRIPT
             'title' => __('Administration'),
             'types' => [
                'User', 'Group', 'Entity', 'Rule',
-               'Profile', 'QueuedNotification', 'QueuedChat', 'Glpi\\Event'
+               'Profile', 'QueuedNotification', 'QueuedChat', 'Glpi\\Event', 'Impact'
             ]
          ],
          'config' => [

@@ -162,7 +162,6 @@ var GLPIImpact = {
       export          : "#export_graph",
       expandToolbar   : "#expand_toolbar",
       toggleFullscreen: "#toggle_fullscreen",
-      impactSettings  : "#impact_settings",
       sideToggle      : ".impact-side-toggle",
       sideToggleIcon  : ".impact-side-toggle i",
       undo            : "#impact_undo",

@@ -1816,4 +1816,21 @@ class Impact extends CommonGLPI {
 
       Html::closeForm();
    }
+
+   static function getMenuName() {
+      return __('Impact analysis');
+   }
+
+   static function getMenuContent()
+   {
+      global $CFG_GLPI;
+
+      $menu = [];
+
+      $menu['title'] = self::getMenuName();
+      $menu['page']  = '/front/impact.php';
+      $menu['icon'] = 'fas fa-exchange-alt';
+
+      return $menu;
+   }
 }
