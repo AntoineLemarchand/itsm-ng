@@ -34,8 +34,11 @@
 
 Session::checkRight("config", UPDATE);
  
-
 Html::header(__('Setup'), $_SERVER['PHP_SELF'], "config", "plugin");
+
+Impact::showConfigForm();
 ?>
+
+
 
 <?php Html::footer() ?>

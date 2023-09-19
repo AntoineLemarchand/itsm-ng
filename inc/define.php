@@ -657,3 +657,8 @@ $CFG_GLPI["impact_asset_types"] = $CFG_GLPI["default_impact_asset_types"] + [
    Supplier::getType()           => "pics/impact/supplier.png",
    User::getType()               => "pics/impact/user.png",
 ];
+
+$CFG_GLPI[Impact::CONF_ARROW_COLOR_DEFAULT] = "black";
+$CFG_GLPI[Impact::CONF_ARROW_COLOR_IMPACT] = '#ff3418';
+$CFG_GLPI[Impact::CONF_ARROW_COLOR_DEPENDS] = '#1c76ff';
+$CFG_GLPI[Impact::CONF_ARROW_COLOR_BOTH] = '#ca29ff';

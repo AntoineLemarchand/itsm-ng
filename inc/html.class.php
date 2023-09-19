@@ -1653,7 +1653,7 @@ JAVASCRIPT
             'title' => __('Administration'),
             'types' => [
                'User', 'Group', 'Entity', 'Rule',
-               'Profile', 'QueuedNotification', 'QueuedChat', 'Glpi\\Event', 'Impact'
+               'Profile', 'QueuedNotification', 'QueuedChat', 'Glpi\\Event'
             ]
          ],
          'config' => [

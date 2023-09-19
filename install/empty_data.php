@@ -310,7 +310,11 @@ $default_prefs = [
    'admin_email_noreply'                     => '',
    'admin_email_noreply_name'                => '',
    'notifications_chat'                      => '0',
-   Impact::CONF_ENABLED                      => exportArrayToDB(Impact::getDefaultItemtypes())
+   Impact::CONF_ENABLED                      => exportArrayToDB(Impact::getDefaultItemtypes()),
+   Impact::CONF_ARROW_COLOR_DEFAULT          => Impact::getDefaultArrowColors()[Impact::CONF_ARROW_COLOR_DEFAULT],
+   Impact::CONF_ARROW_COLOR_IMPACT           => Impact::getDefaultArrowColors()[Impact::CONF_ARROW_COLOR_IMPACT],
+   Impact::CONF_ARROW_COLOR_DEPENDS          => Impact::getDefaultArrowColors()[Impact::CONF_ARROW_COLOR_DEPENDS],
+   Impact::CONF_ARROW_COLOR_BOTH             => Impact::getDefaultArrowColors()[Impact::CONF_ARROW_COLOR_BOTH],
 ];
 
 $tables['glpi_configs'] = [];

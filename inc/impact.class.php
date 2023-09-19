@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ---------------------------------------------------------------------
  * GLPI - Gestionnaire Libre de Parc Informatique
@@ -37,18 +38,13 @@ if (!defined('GLPI_ROOT')) {
 /**
  * @since 9.5.0
  */
-class Impact extends CommonGLPI {
+class Impact extends CommonGLPI
+{
    // Constants used to express the direction or "flow" of a graph
    // Theses constants can also be used to express if an edge is reachable
    // when exploring the graph forward, backward or both (0b11)
    const DIRECTION_FORWARD    = 0b01;
    const DIRECTION_BACKWARD   = 0b10;
-
-   // Default colors used for the edges of the graph according to their flow
-   const DEFAULT_COLOR            = 'black';   // The edge is not accessible from the starting point of the graph
-   const IMPACT_COLOR             = '#ff3418'; // Forward
-   const DEPENDS_COLOR            = '#1c76ff'; // Backward
-   const IMPACT_AND_DEPENDS_COLOR = '#ca29ff'; // Forward and backward
 
    const NODE_ID_DELIMITER = "::";
    const EDGE_ID_DELIMITER = "->";
@@ -61,11 +57,20 @@ class Impact extends CommonGLPI {
    // Config values
    const CONF_ENABLED = 'impact_enabled_itemtypes';
 
-   public static function getTypeName($nb = 0) {
+   const CONF_ARROW_COLOR_DEFAULT = 'impact_arrow_color_default',
+         CONF_ARROW_COLOR_IMPACT = 'impact_arrow_color_impact',
+         CONF_ARROW_COLOR_DEPENDS = 'impact_arrow_color_depends',
+         CONF_ARROW_COLOR_BOTH = 'impact_arrow_color_both';
+
+   static $rightname = 'config';
+
+   public static function getTypeName($nb = 0)
+   {
       return __('Impact analysis');
    }
 
-   public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
+   public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
+   {
       global $DB;
 
       // Class of the current item
@@ -88,7 +93,8 @@ class Impact extends CommonGLPI {
          );
       }
 
-      if (!$_SESSION['glpishow_count_on_tabs']
+      if (
+         !$_SESSION['glpishow_count_on_tabs']
          || !isset($item->fields['id'])
          || $is_itil_object
       ) {
@@ -279,11 +285,11 @@ class Impact extends CommonGLPI {
          echo '<i class="fas fa-2x fa-caret-down impact-toggle-subitems-master impact-pointer"></i></h3></th>';
          echo '</tr>';
          echo '<tr class="noHover">';
-         echo '<th>'._n('Item', 'Items', 1).'</th>';
-         echo '<th>'.__('Relation').'</th>';
-         echo '<th>'.Ticket::getTypeName(Session::getPluralNumber()).'</th>';
-         echo '<th>'.Problem::getTypeName(Session::getPluralNumber()).'</th>';
-         echo '<th>'.Change::getTypeName(Session::getPluralNumber()).'</th>';
+         echo '<th>' . _n('Item', 'Items', 1) . '</th>';
+         echo '<th>' . __('Relation') . '</th>';
+         echo '<th>' . Ticket::getTypeName(Session::getPluralNumber()) . '</th>';
+         echo '<th>' . Problem::getTypeName(Session::getPluralNumber()) . '</th>';
+         echo '<th>' . Change::getTypeName(Session::getPluralNumber()) . '</th>';
          echo '<th width="50px"></th>';
          echo '</tr>';
          echo '</thead>';
@@ -360,12 +366,12 @@ class Impact extends CommonGLPI {
       // Toolbar
       echo '<div class="impact-list-toolbar">';
       if ($has_impact) {
-         echo '<a target="_blank" href="'.$CFG_GLPI['root_doc'].'/front/impactcsv.php?itemtype=' . $impact_item->fields['itemtype'] . '&items_id=' . $impact_item->fields['items_id'] .'">';
-         echo '<i class="fas fa-download impact-pointer impact-list-tools" title="' . __('Export to csv') .'"></i>';
+         echo '<a target="_blank" href="' . $CFG_GLPI['root_doc'] . '/front/impactcsv.php?itemtype=' . $impact_item->fields['itemtype'] . '&items_id=' . $impact_item->fields['items_id'] . '">';
+         echo '<i class="fas fa-download impact-pointer impact-list-tools" title="' . __('Export to csv') . '"></i>';
          echo '</a>';
       }
       if ($can_update && $impact_context) {
-         echo '<i id="impact-list-settings" class="fas fa-cog impact-pointer impact-list-tools" title="' . __('Settings') .'"></i>';
+         echo '<i id="impact-list-settings" class="fas fa-cog impact-pointer impact-list-tools" title="' . __('Settings') . '"></i>';
       }
       echo '</div>';
 
@@ -374,7 +380,7 @@ class Impact extends CommonGLPI {
          $rand = mt_rand();
 
          echo '<div id="list_depth_dialog" class="impact-dialog" title=' . __("Settings") . '>';
-         echo '<form action="'.$CFG_GLPI['root_doc'].'/front/impactitem.form.php" method="POST">';
+         echo '<form action="' . $CFG_GLPI['root_doc'] . '/front/impactitem.form.php" method="POST">';
          echo '<table class="tab_cadre_fixe">';
          echo '<tr>';
          echo '<td><label for="impact_max_depth_' . $rand . '">' . __("Max depth") . '</label></td>';
@@ -504,7 +510,8 @@ class Impact extends CommonGLPI {
     * @param string  $type
     * @param string  $node_id
     */
-   private static function displayListNumber($itil_objects, $type, $node_id) {
+   private static function displayListNumber($itil_objects, $type, $node_id)
+   {
       $user = new User();
       $user->getFromDB(Session::getLoginUserID());
       $user->computePreferences();
@@ -551,7 +558,7 @@ class Impact extends CommonGLPI {
                $priority = $itil_object['priority'];
             }
          }
-         $extra = 'id="' . $id . '" style="background-color:' .  $user->fields["priority_$priority"] .'; cursor:pointer;"';
+         $extra = 'id="' . $id . '" style="background-color:' .  $user->fields["priority_$priority"] . '; cursor:pointer;"';
 
          echo Html::scriptBlock('
             $(document).on("click", "#' . $id . '", function(e) {
@@ -647,7 +654,8 @@ class Impact extends CommonGLPI {
     *
     * @return array
     */
-   public static function filterGraph(array $graph, int $direction) {
+   public static function filterGraph(array $graph, int $direction)
+   {
       $new_graph = [
          'edges' => [],
          'nodes' => [],
@@ -678,7 +686,8 @@ class Impact extends CommonGLPI {
     * @param array  $b              a node of the graph
     * @param int    $direction      direction used to travel the graph
     */
-   public static function bfs(array $graph, array $a, array $b, int $direction) {
+   public static function bfs(array $graph, array $a, array $b, int $direction)
+   {
       switch ($direction) {
          case self::DIRECTION_FORWARD:
             $start = $a;
@@ -754,8 +763,8 @@ class Impact extends CommonGLPI {
       echo '<div class="impact-header">';
       echo "<h2>" . __("Impact analysis") . "</h2>";
       echo "<div id='switchview'>";
-      echo "<a id='sviewlist' href='#list'><i class='pointer fa fa-list-alt' title='".__('View as list')."'></i></a>";
-      echo "<a id='sviewgraph' href='#graph'><i class='pointer fa fa-bezier-curve' title='".__('View graphical representation')."'></i></a>";
+      echo "<a id='sviewlist' href='#list'><i class='pointer fa fa-list-alt' title='" . __('View as list') . "'></i></a>";
+      echo "<a id='sviewgraph' href='#graph'><i class='pointer fa fa-bezier-curve' title='" . __('View graphical representation') . "'></i></a>";
       echo "</div>";
       echo "</div>";
 
@@ -795,7 +804,8 @@ class Impact extends CommonGLPI {
     *
     * @since 9.5
     */
-   public static function loadLibs() {
+   public static function loadLibs()
+   {
       echo Html::css('public/lib/cytoscape.css');
       echo Html::script("public/lib/cytoscape.js");
    }
@@ -808,7 +818,8 @@ class Impact extends CommonGLPI {
     *
     * @since 9.5
     */
-   public static function printAssetSelectionForm(array $items) {
+   public static function printAssetSelectionForm(array $items)
+   {
       global $CFG_GLPI;
 
       // Dropdown values
@@ -841,7 +852,7 @@ class Impact extends CommonGLPI {
 
                $.ajax({
                   type: "GET",
-                  url: "'. $CFG_GLPI['root_doc'] . '/ajax/impact.php",
+                  url: "' . $CFG_GLPI['root_doc'] . '/ajax/impact.php",
                   data: {
                      itemtype: values[0],
                      items_id: values[1],
@@ -971,7 +982,8 @@ class Impact extends CommonGLPI {
     *
     * @since 9.5
     */
-   public static function printImpactNetworkContainer() {
+    public static function printImpactNetworkContainer()
+    {
       global $CFG_GLPI;
 
       $action = $CFG_GLPI['root_doc'] . '/ajax/impact.php';
@@ -1001,7 +1013,7 @@ class Impact extends CommonGLPI {
       echo '<div class="impact-side-filter-itemtypes-items">';
       $itemtypes = $CFG_GLPI["impact_asset_types"];
       // Sort by translated itemtypes
-      uksort($itemtypes, function($a, $b) {
+      uksort($itemtypes, function ($a, $b) {
          return strcasecmp($a::getTypeName(), $b::getTypeName());
       });
       foreach ($itemtypes as $itemtype => $icon) {
@@ -1040,7 +1052,7 @@ class Impact extends CommonGLPI {
       echo '</div>'; // <div class="impact-side-search-more">
 
       echo '<div class="impact-side-search-no-results">';
-      echo '<p>'. __("No results") . '</p>';
+      echo '<p>' . __("No results") . '</p>';
       echo '</div>'; // <div class="impact-side-search-no-results">
 
       echo '<div class="impact-side-search-spinner">';
@@ -1077,17 +1089,20 @@ class Impact extends CommonGLPI {
 
       echo '<h4>' . __('Colors') . '</h4>';
       echo '<div class="impact-side-settings-item">';
-      Html::showColorField("depends_color", []);
+      Html::showColorField("depends_color",
+         ['value' => Config::getConfigurationValues('core', [self::CONF_ARROW_COLOR_DEPENDS])[self::CONF_ARROW_COLOR_DEPENDS]]);
       echo '<span class="impact-checkbox-label">' . __("Depends") . '</span>';
       echo '</div>';
 
       echo '<div class="impact-side-settings-item">';
-      Html::showColorField("impact_color", []);
+      Html::showColorField("impact_color",
+         ['value' => Config::getConfigurationValues('core', [self::CONF_ARROW_COLOR_DEPENDS])[self::CONF_ARROW_COLOR_DEPENDS]]);
       echo '<span class="impact-checkbox-label">' . __("Impact") . '</span>';
       echo '</div>';
 
       echo '<div class="impact-side-settings-item">';
-      Html::showColorField("impact_and_depends_color", []);
+      Html::showColorField("impact_and_depends_color", 
+      ['value' => Config::getConfigurationValues('core', [self::CONF_ARROW_COLOR_BOTH])[self::CONF_ARROW_COLOR_BOTH]]);
       echo '<span class="impact-checkbox-label">' . __("Impact and depends") . '</span>';
       echo '</div>';
 
@@ -1102,18 +1117,18 @@ class Impact extends CommonGLPI {
       echo '</div>'; // div class="impact-side-panel">
 
       echo '<ul>';
-      echo '<li id="save_impact" title="' . __("Save") .'"><i class="fas fa-fw fa-save"></i></li>';
-      echo '<li id="impact_undo" class="impact-disabled" title="' . __("Undo") .'"><i class="fas fa-fw fa-undo"></i></li>';
-      echo '<li id="impact_redo" class="impact-disabled" title="' . __("Redo") .'"><i class="fas fa-fw fa-redo"></i></li>';
+      echo '<li id="save_impact" title="' . __("Save") . '"><i class="fas fa-fw fa-save"></i></li>';
+      echo '<li id="impact_undo" class="impact-disabled" title="' . __("Undo") . '"><i class="fas fa-fw fa-undo"></i></li>';
+      echo '<li id="impact_redo" class="impact-disabled" title="' . __("Redo") . '"><i class="fas fa-fw fa-redo"></i></li>';
       echo '<li class="impact-separator"></li>';
-      echo '<li id="add_node" title="' . __("Add asset") .'"><i class="fas fa-fw fa-plus"></i></li>';
-      echo '<li id="add_edge" title="' . __("Add relation") .'"><i class="fas fa-fw fa-slash"></i></li>';
-      echo '<li id="add_compound" title="' . __("Add group") .'"><i class="far fa-fw fa-object-group"></i></li>';
-      echo '<li id="delete_element" title="' . __("Delete element") .'"><i class="fas fa-fw fa-trash"></i></li>';
+      echo '<li id="add_node" title="' . __("Add asset") . '"><i class="fas fa-fw fa-plus"></i></li>';
+      echo '<li id="add_edge" title="' . __("Add relation") . '"><i class="fas fa-fw fa-slash"></i></li>';
+      echo '<li id="add_compound" title="' . __("Add group") . '"><i class="far fa-fw fa-object-group"></i></li>';
+      echo '<li id="delete_element" title="' . __("Delete element") . '"><i class="fas fa-fw fa-trash"></i></li>';
       echo '<li class="impact-separator"></li>';
-      echo '<li id="export_graph" title="' . __("Download") .'"><i class="fas fa-fw fa-download"></i></li>';
-      echo '<li id="toggle_fullscreen" title="' . __("Fullscreen") .'"><i class="fas fa-fw fa-expand"></i></li>';
-      echo '<li id="impact_settings" title="' . __("Settings") .'"><i class="fas fa-fw fa-cog"></i></li>';
+      echo '<li id="export_graph" title="' . __("Download") . '"><i class="fas fa-fw fa-download"></i></li>';
+      echo '<li id="toggle_fullscreen" title="' . __("Fullscreen") . '"><i class="fas fa-fw fa-expand"></i></li>';
+      echo '<li id="impact_settings" title="' . __("Settings") . '"><i class="fas fa-fw fa-cog"></i></li>';
       echo '</ul>';
       echo '<span class="impact-side-toggle"><i class="fas fa-2x fa-chevron-left"></i></span>';
       echo '</div>'; // <div class="impact-side impact-side-expanded">
@@ -1131,7 +1146,8 @@ class Impact extends CommonGLPI {
     *
     * @return array Array containing edges and nodes
     */
-   public static function buildGraph(CommonDBTM $item) {
+   public static function buildGraph(CommonDBTM $item)
+   {
       $nodes = [];
       $edges = [];
 
@@ -1249,7 +1265,8 @@ class Impact extends CommonGLPI {
     * @param string $icon_path
     * @return string
     */
-   private static function checkIcon(string $icon_path): string {
+   private static function checkIcon(string $icon_path): string
+   {
       // Special case for images returned dynamicly
       if (strpos($icon_path, ".php") !== false) {
          return $icon_path;
@@ -1275,7 +1292,8 @@ class Impact extends CommonGLPI {
     *
     * @return bool true if the node was missing, else false
     */
-   private static function addNode(array &$nodes, CommonDBTM $item) {
+   private static function addNode(array &$nodes, CommonDBTM $item)
+   {
       global $CFG_GLPI;
 
       // Check if the node already exist
@@ -1434,7 +1452,8 @@ class Impact extends CommonGLPI {
     *
     * @return string $item
     */
-   public static function prepareParams(CommonDBTM $item) {
+   public static function prepareParams(CommonDBTM $item)
+   {
       $impact_item = ImpactItem::findForItem($item);
 
       $params = array_intersect_key($impact_item->fields, [
@@ -1461,8 +1480,18 @@ class Impact extends CommonGLPI {
                   'show_depends'             => 1,
                   'show_impact'              => 1,
                   'max_depth'                => 1,
-               ]
-            );
+                  ]
+               );
+               $colors = Config::getConfigurationValues('core', [
+                  self::CONF_ARROW_COLOR_DEFAULT,
+                  self::CONF_ARROW_COLOR_IMPACT,
+                  self::CONF_ARROW_COLOR_DEPENDS,
+                  self::CONF_ARROW_COLOR_BOTH,
+               ]);
+               $params['default_color'] = $colors[self::CONF_ARROW_COLOR_DEFAULT];
+               $params['impact_color'] = $colors[self::CONF_ARROW_COLOR_IMPACT];
+               $params['depends_color'] = $colors[self::CONF_ARROW_COLOR_DEPENDS];
+               $params['impact_and_depends_color'] = $colors[self::CONF_ARROW_COLOR_BOTH];
          }
       }
 
@@ -1477,7 +1506,8 @@ class Impact extends CommonGLPI {
     *
     * @return string json data
     */
-   public static function makeDataForCytoscape(array $graph) {
+   public static function makeDataForCytoscape(array $graph)
+   {
       $data = [];
 
       foreach ($graph['nodes'] as $node) {
@@ -1502,7 +1532,8 @@ class Impact extends CommonGLPI {
     *
     * @since 9.5
     */
-   public static function printShowOngoingDialog() {
+   public static function printShowOngoingDialog()
+   {
       // This dialog will be built dynamically by the front end
       echo '<div id="ongoing_dialog"></div>';
    }
@@ -1512,7 +1543,8 @@ class Impact extends CommonGLPI {
     *
     * @since 9.5
     */
-   public static function printEditCompoundDialog() {
+   public static function printEditCompoundDialog()
+   {
       echo '<div id="edit_compound_dialog"  class="impact-dialog">';
       echo "<table class='tab_cadre_fixe'>";
 
@@ -1549,18 +1581,25 @@ class Impact extends CommonGLPI {
     *
     * @param CommonDBTM $item The specified item
     */
-   public static function prepareImpactNetwork(CommonDBTM $item) {
+   public static function prepareImpactNetwork(CommonDBTM $item)
+   {
       // Load requirements
       self::printImpactNetworkContainer();
       self::printShowOngoingDialog();
       self::printEditCompoundDialog();
       echo Html::script("js/impact.js");
 
+      $arrow_colors = Config::getConfigurationValues('core', [
+         self::CONF_ARROW_COLOR_DEFAULT,
+         self::CONF_ARROW_COLOR_IMPACT,
+         self::CONF_ARROW_COLOR_DEPENDS,
+         self::CONF_ARROW_COLOR_BOTH,
+      ]);
       // Load backend values
-      $default   = self::DEFAULT_COLOR;
-      $forward   = self::IMPACT_COLOR;
-      $backward  = self::DEPENDS_COLOR;
-      $both      = self::IMPACT_AND_DEPENDS_COLOR;
+      $default   = $arrow_colors[self::CONF_ARROW_COLOR_DEFAULT];
+      $forward   = $arrow_colors[self::CONF_ARROW_COLOR_IMPACT];
+      $backward  = $arrow_colors[self::CONF_ARROW_COLOR_DEPENDS];
+      $both      = $arrow_colors[self::CONF_ARROW_COLOR_BOTH];
       $start_node = self::getNodeID($item);
 
       // Bind the backend values to the client and start the network
@@ -1586,7 +1625,8 @@ class Impact extends CommonGLPI {
     * @param string $itemtype Class of the asset
     * @param string $items_id id of the asset
     */
-   public static function assetExist(string $itemtype, string $items_id) {
+   public static function assetExist(string $itemtype, string $items_id)
+   {
       try {
          // Check this asset type is enabled
          if (!self::isEnabled($itemtype)) {
@@ -1615,7 +1655,8 @@ class Impact extends CommonGLPI {
     *
     * @return string
     */
-   public static function getNodeID(CommonDBTM $item) {
+   public static function getNodeID(CommonDBTM $item)
+   {
       return get_class($item) . self::NODE_ID_DELIMITER . $item->fields['id'];
    }
 
@@ -1655,7 +1696,8 @@ class Impact extends CommonGLPI {
     *
     * @param CommonDBTM $item The item being purged
     */
-   public static function clean(\CommonDBTM $item) {
+   public static function clean(\CommonDBTM $item)
+   {
       global $DB;
 
       // Skip if not a valid impact type
@@ -1688,11 +1730,16 @@ class Impact extends CommonGLPI {
 
       // Remove impact context if defined and not a slave, update others
       // contexts if they are slave to us
-      if ($impact_item->fields['impactcontexts_id'] != 0
-         && $impact_item->fields['is_slave'] != 0) {
-         $DB->update(ImpactItem::getTable(), [
+      if (
+         $impact_item->fields['impactcontexts_id'] != 0
+         && $impact_item->fields['is_slave'] != 0
+      ) {
+         $DB->update(
+            ImpactItem::getTable(),
+            [
                'impactcontexts_id' => 0,
-            ], [
+            ],
+            [
                'impactcontexts_id' => $impact_item->fields['impactcontexts_id'],
             ]
          );
@@ -1709,9 +1756,12 @@ class Impact extends CommonGLPI {
          ]);
 
          if ($count < 2) {
-            $DB->update(ImpactItem::getTable(), [
+            $DB->update(
+               ImpactItem::getTable(),
+               [
                   'parent_id' => 0,
-               ], [
+               ],
+               [
                   'parent_id' => $impact_item->fields['parent_id']
                ]
             );
@@ -1729,7 +1779,8 @@ class Impact extends CommonGLPI {
     * @param string $itemtype
     * @return bool
     */
-   public static function isEnabled(string $itemtype): bool {
+   public static function isEnabled(string $itemtype): bool
+   {
       return in_array($itemtype, self::getEnabledItemtypes());
    }
 
@@ -1738,7 +1789,8 @@ class Impact extends CommonGLPI {
     *
     * @return array
     */
-   public static function getEnabledItemtypes(): array {
+   public static function getEnabledItemtypes(): array
+   {
       // Get configured values
       $conf = Config::getConfigurationValues('core');
 
@@ -1749,7 +1801,7 @@ class Impact extends CommonGLPI {
       $enabled = importArrayFromDB($conf[self::CONF_ENABLED]);
 
       // Remove any forbidden values
-      return array_filter($enabled, function($itemtype) {
+      return array_filter($enabled, function ($itemtype) {
          global $CFG_GLPI;
 
          return isset($CFG_GLPI['impact_asset_types'][$itemtype]);
@@ -1761,17 +1813,38 @@ class Impact extends CommonGLPI {
     *
     * @return array
     */
-   public static function getDefaultItemtypes() {
+   public static function getDefaultItemtypes()
+   {
       global $CFG_GLPI;
 
       $values = $CFG_GLPI["default_impact_asset_types"];
       return array_keys($values);
    }
 
+      /**
+    * Return default arrow colors
+    *
+    * @return array
+    */
+    public static function getDefaultArrowColors()
+    {
+       global $CFG_GLPI;
+ 
+       $values = [
+         self::CONF_ARROW_COLOR_DEFAULT => $CFG_GLPI[self::CONF_ARROW_COLOR_DEFAULT],
+         self::CONF_ARROW_COLOR_IMPACT => $CFG_GLPI[self::CONF_ARROW_COLOR_IMPACT],
+         self::CONF_ARROW_COLOR_DEPENDS => $CFG_GLPI[self::CONF_ARROW_COLOR_DEPENDS],
+         self::CONF_ARROW_COLOR_BOTH => $CFG_GLPI[self::CONF_ARROW_COLOR_BOTH],
+       ];
+       return $values;
+    }
+ 
+
    /**
     * Print the impact config tab
     */
-   public static function showConfigForm() {
+   public static function showConfigForm()
+   {
       global $CFG_GLPI;
 
       // Form head
@@ -1786,17 +1859,16 @@ class Impact extends CommonGLPI {
       $input_name = self::CONF_ENABLED;
       $values = $CFG_GLPI["impact_asset_types"];
       foreach ($values as $itemtype => $icon) {
-         $values[$itemtype]= $itemtype::getTypeName();
+         $values[$itemtype] = $itemtype::getTypeName();
       }
       echo '<tr class="tab_bg_2">';
 
       echo '<td width="40%">';
-      echo "<label for='$input_name'>";
-      echo __('Enabled itemtypes');
-      echo '</label>';
+      echo "<label for='$input_name'>" . __('Enabled itemtypes') . '</label>';
       echo '</td>';
 
       $core_config = Config::getConfigurationValues("core");
+      
       $db_values = importArrayFromDB($core_config[self::CONF_ENABLED]);
       echo '<td>';
       Dropdown::showFromArray($input_name, $values, [
@@ -1806,6 +1878,30 @@ class Impact extends CommonGLPI {
       echo "</td>";
 
       echo "</tr>";
+
+      // Second row: arrow colors
+      $db_colors = Config::getConfigurationValues('core', [
+         self::CONF_ARROW_COLOR_DEFAULT,
+         self::CONF_ARROW_COLOR_IMPACT,
+         self::CONF_ARROW_COLOR_DEPENDS,
+         self::CONF_ARROW_COLOR_BOTH,
+      ]);
+      $labels = [
+         self::CONF_ARROW_COLOR_DEFAULT => __('Default arrow color'),
+         self::CONF_ARROW_COLOR_IMPACT => __('Impact arrow color'),
+         self::CONF_ARROW_COLOR_DEPENDS => __('Depends arrow color'),
+         self::CONF_ARROW_COLOR_BOTH => __('Impact/Depends arrow color'),
+      ];
+
+      foreach ($db_colors as $key => $value) {
+         echo '<tr class="tab_bg_2">';
+         echo '<td width="40%"><label for="'.$key.'">'.$labels[$key].'</label></td>';
+         echo '<td>';
+         echo Html::showColorField($key, ['value' => $value, 'rand' => '']);
+         echo '</td>';
+         echo '</tr>';
+      }
+      //echo Html::showColorField("arrowColors", ['rand' => __('Impact/Depends'), 'value' => $db_colors[self::CONF_ARROW_COLOR_BOTH]]);
 
       echo '</table>';
 
@@ -1817,7 +1913,8 @@ class Impact extends CommonGLPI {
       Html::closeForm();
    }
 
-   static function getMenuName() {
+   static function getMenuName()
+   {
       return __('Impact analysis');
    }
 
@@ -1827,10 +1924,20 @@ class Impact extends CommonGLPI {
 
       $menu = [];
 
-      $menu['title'] = self::getMenuName();
-      $menu['page']  = '/front/impact.php';
-      $menu['icon'] = 'fas fa-exchange-alt';
+      if (static::canUpdate()) {
+         $menu['title'] = self::getMenuName();
+         $menu['page']  = '/front/impact.php';
+         $menu['icon'] = 'fas fa-exchange-alt';
+
+         $menu['options']['search'] = 'grrrr';
+      }
 
       return $menu;
    }
+
+   function showForm($ID, $options = [])
+   {
+      echo "<h1>HA</h1>";
+   }
+
 }
