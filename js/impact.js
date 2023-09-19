@@ -79,9 +79,6 @@ var GLPIImpact = {
    ACTION_EDIT_MAX_DEPTH               : 9,
    ACTION_EDIT_IMPACT_VISIBILITY       : 10,
    ACTION_EDIT_DEPENDS_VISIBILITY      : 11,
-   ACTION_EDIT_DEPENDS_COLOR           : 12,
-   ACTION_EDIT_IMPACT_COLOR            : 13,
-   ACTION_EDIT_IMPACT_AND_DEPENDS_COLOR: 14,
 
    // Constans for depth
    DEFAULT_DEPTH: 5,
@@ -391,45 +388,6 @@ var GLPIImpact = {
             );
             break;
 
-         // Set previous value for "depends" color
-         // Available data: oldColor, newColor
-         case this.ACTION_EDIT_DEPENDS_COLOR:
-            this.setEdgeColors({
-               backward: data.oldColor,
-            });
-            $(GLPIImpact.selectors.dependsColor).val(
-               GLPIImpact.edgeColors[GLPIImpact.BACKWARD]
-            );
-            this.updateStyle();
-            this.cy.trigger("change");
-            break;
-
-         // Set previous value for "impact" color
-         // Available data: oldColor, newColor
-         case this.ACTION_EDIT_IMPACT_COLOR:
-            this.setEdgeColors({
-               forward: data.oldColor,
-            });
-            $(GLPIImpact.selectors.impactColor).val(
-               GLPIImpact.edgeColors[GLPIImpact.FORWARD]
-            );
-            this.updateStyle();
-            this.cy.trigger("change");
-            break;
-
-         // Set previous value for "impact and depends" color
-         // Available data: oldColor, newColor
-         case this.ACTION_EDIT_IMPACT_AND_DEPENDS_COLOR:
-            this.setEdgeColors({
-               both: data.oldColor,
-            });
-            $(GLPIImpact.selectors.impactAndDependsColor).val(
-               GLPIImpact.edgeColors[GLPIImpact.BOTH]
-            );
-            this.updateStyle();
-            this.cy.trigger("change");
-            break;
-
          // Set previous value for max depth
          // Available data: oldDepth, newDepth
          case this.ACTION_EDIT_MAX_DEPTH:
@@ -619,46 +577,6 @@ var GLPIImpact = {
                'checked',
                !$(GLPIImpact.selectors.toggleDepends).prop('checked')
             );
-            break;
-
-         // Set new value for "depends" color
-         // Available data: oldColor, newColor
-         case this.ACTION_EDIT_DEPENDS_COLOR:
-            this.setEdgeColors({
-               backward: data.newColor,
-            });
-            $(GLPIImpact.selectors.dependsColor).val(
-               GLPIImpact.edgeColors[GLPIImpact.BACKWARD]
-            );
-            this.updateStyle();
-            this.cy.trigger("change");
-            break;
-
-         // Set new value for "impact" color
-         // Available data: oldColor, newColor
-         case this.ACTION_EDIT_IMPACT_COLOR:
-            this.setEdgeColors({
-               forward: data.newColor,
-            });
-            $(GLPIImpact.selectors.forwardColor).val(
-               "set",
-               GLPIImpact.edgeColors[GLPIImpact.FORWARD]
-            );
-            this.updateStyle();
-            this.cy.trigger("change");
-            break;
-
-         // Set new value for "impact and depends" color
-         // Available data: oldColor, newColor
-         case this.ACTION_EDIT_IMPACT_AND_DEPENDS_COLOR:
-            this.setEdgeColors({
-               both: data.newColor,
-            });
-            $(GLPIImpact.selectors.impactAndDependsColor).val(
-               GLPIImpact.edgeColors[GLPIImpact.BOTH]
-            );
-            this.updateStyle();
-            this.cy.trigger("change");
             break;
 
          // Set new value for max depth
@@ -3841,48 +3759,6 @@ var GLPIImpact = {
             $(GLPIImpact.selectors.sideFilterAssets).val(),
             ++GLPIImpact.addAssetPage
          );
-      });
-
-      // Watch for color changes (depends)
-      $(GLPIImpact.selectors.dependsColor).change(function(){
-         var previous = GLPIImpact.edgeColors[GLPIImpact.BACKWARD];
-         GLPIImpact.setEdgeColors({
-            backward: $(GLPIImpact.selectors.dependsColor).val(),
-         });
-         GLPIImpact.updateStyle();
-         GLPIImpact.cy.trigger("change");
-         GLPIImpact.addToUndo(GLPIImpact.ACTION_EDIT_DEPENDS_COLOR, {
-            oldColor: previous,
-            newColor: GLPIImpact.edgeColors[GLPIImpact.BACKWARD]
-         });
-      });
-
-      // Watch for color changes (impact)
-      $(GLPIImpact.selectors.impactColor).change(function(){
-         var previous = GLPIImpact.edgeColors[GLPIImpact.FORWARD];
-         GLPIImpact.setEdgeColors({
-            forward: $(GLPIImpact.selectors.impactColor).val(),
-         });
-         GLPIImpact.updateStyle();
-         GLPIImpact.cy.trigger("change");
-         GLPIImpact.addToUndo(GLPIImpact.ACTION_EDIT_IMPACT_COLOR, {
-            oldColor: previous,
-            newColor: GLPIImpact.edgeColors[GLPIImpact.FORWARD]
-         });
-      });
-
-      // Watch for color changes (impact and depends)
-      $(GLPIImpact.selectors.impactAndDependsColor).change(function(){
-         var previous = GLPIImpact.edgeColors[GLPIImpact.BOTH];
-         GLPIImpact.setEdgeColors({
-            both: $(GLPIImpact.selectors.impactAndDependsColor).val(),
-         });
-         GLPIImpact.updateStyle();
-         GLPIImpact.cy.trigger("change");
-         GLPIImpact.addToUndo(GLPIImpact.ACTION_EDIT_IMPACT_AND_DEPENDS_COLOR, {
-            oldColor: previous,
-            newColor: GLPIImpact.edgeColors[GLPIImpact.BOTH]
-         });
       });
 
       // Handle drag & drop on add node search result
