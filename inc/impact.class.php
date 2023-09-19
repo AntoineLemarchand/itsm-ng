@@ -1847,44 +1847,33 @@ class Impact extends CommonGLPI
    {
       global $CFG_GLPI;
 
-      // Form head
       $action = Toolbox::getItemTypeFormURL(Config::getType());
-      echo "<form name='form' action='$action' method='post'>";
-
-      // Table head
-      echo '<table class="tab_cadre_fixe">';
-      echo '<tr><th colspan="2">' . __('Impact analysis configuration') . '</th></tr>';
-
-      // First row: enabled itemtypes
-      $input_name = self::CONF_ENABLED;
-      $values = $CFG_GLPI["impact_asset_types"];
-      foreach ($values as $itemtype => $icon) {
-         $values[$itemtype] = $itemtype::getTypeName();
-      }
-      echo '<tr class="tab_bg_2">';
-
-      echo '<td width="40%">';
-      echo "<label for='$input_name'>" . __('Enabled itemtypes') . '</label>';
-      echo '</td>';
-
       $core_config = Config::getConfigurationValues("core");
       
-      $db_values = importArrayFromDB($core_config[self::CONF_ENABLED]);
-      echo '<td>';
-      Dropdown::showFromArray($input_name, $values, [
+      $config_title = __('Impact analysis configuration');
+      $enabled_itemtype_title = __('Enabled itemtypes');
+      $save_button_text = __('Save');
+
+      // enabled itemtypes input loading
+      $itemtypes_input_name = self::CONF_ENABLED;
+      $itemtypes = $CFG_GLPI["impact_asset_types"];
+      foreach ($itemtypes as $itemtype => $icon) {
+         $values[$itemtype] = $itemtype::getTypeName();
+      }
+      $enabled_itemtypes = importArrayFromDB($core_config[self::CONF_ENABLED]);
+      ob_start();
+      Dropdown::showFromArray($itemtypes_input_name, $values, [
          'multiple' => true,
-         'values'   => $db_values
+         'values'   => $enabled_itemtypes
       ]);
-      echo "</td>";
-
-      echo "</tr>";
-
-      // Second row: arrow colors
-      $db_colors = Config::getConfigurationValues('core', [
-         self::CONF_ARROW_COLOR_DEFAULT,
-         self::CONF_ARROW_COLOR_IMPACT,
-         self::CONF_ARROW_COLOR_DEPENDS,
-         self::CONF_ARROW_COLOR_BOTH,
+      $itemtypes_dropdown = ob_get_clean();
+      
+      // arrow color input loading
+      $db_colors = array_intersect_key($core_config, [
+         self::CONF_ARROW_COLOR_DEFAULT => "",
+         self::CONF_ARROW_COLOR_IMPACT => "",
+         self::CONF_ARROW_COLOR_DEPENDS => "",
+         self::CONF_ARROW_COLOR_BOTH => "",
       ]);
       $labels = [
          self::CONF_ARROW_COLOR_DEFAULT => __('Default arrow color'),
@@ -1892,7 +1881,7 @@ class Impact extends CommonGLPI
          self::CONF_ARROW_COLOR_DEPENDS => __('Depends arrow color'),
          self::CONF_ARROW_COLOR_BOTH => __('Impact/Depends arrow color'),
       ];
-
+      ob_start();
       foreach ($db_colors as $key => $value) {
          echo '<tr class="tab_bg_2">';
          echo '<td width="40%"><label for="'.$key.'">'.$labels[$key].'</label></td>';
@@ -1901,16 +1890,31 @@ class Impact extends CommonGLPI
          echo '</td>';
          echo '</tr>';
       }
-      //echo Html::showColorField("arrowColors", ['rand' => __('Impact/Depends'), 'value' => $db_colors[self::CONF_ARROW_COLOR_BOTH]]);
+      $arrow_colors = ob_get_clean();
 
-      echo '</table>';
+      $csrf_token = Session::getNewCSRFToken();
 
-      // Submit button
-      echo '<div style="text-align:center">';
-      echo Html::submit(__('Save'), ['name' => 'update']);
-      echo '</div>';
 
-      Html::closeForm();
+      echo <<<HTML
+      <form name='form' action='{$action}' method='post'>
+         <table class="tab_cadre_fixe">
+            <tr><th colspan="2">$config_title</th></tr>
+            <tr class="tab_bg_2">
+               <td width="40%">
+                  <label for='$itemtypes_input_name'>$enabled_itemtype_title</label>
+               </td>
+               <td>
+                  $itemtypes_dropdown
+               </td>
+            </tr>
+            $arrow_colors
+         </table>
+         <div style="text-align:center">
+            <input class="submit" type="submit" name="update" value="$save_button_text">
+         </div>
+         <input type="hidden" name='_glpi_csrf_token' value='$csrf_token'>
+      </form>
+      HTML;
    }
 
    static function getMenuName()
