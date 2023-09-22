@@ -376,7 +376,6 @@ class Impact extends CommonGLPI {
       // Settings dialog
       if ($can_update && $impact_context) {
          $rand = mt_rand();
-
          echo '<div id="list_depth_dialog" class="impact-dialog" title=' . __("Settings") . '>';
          echo '<form action="'.$CFG_GLPI['root_doc'].'/front/impactitem.form.php" method="POST">';
          echo '<table class="tab_cadre_fixe">';
@@ -1098,6 +1097,11 @@ class Impact extends CommonGLPI {
       echo '<h4>' . __('Max depth') . '</h4>';
       echo '<div class="impact-side-settings-item">';
       echo '<input id="max_depth" type="range" class="impact-range" min="1" max ="10" step="1" value="5"><span id="max_depth_view" class="impact-checkbox-label"></span>';
+      echo '</div>';
+
+      echo '<h4>' . __('Edge width') . '</h4>';
+      echo '<div class="impact-side-settings-item">';
+      echo '<input id="edge_width" type="range" class="impact-range" min="1" max ="10" step="1" value="1"><span id="edge_width_view" class="impact-checkbox-label"></span>';
       echo '</div>';
 
       echo '</div>'; // div class="impact-side-settings">

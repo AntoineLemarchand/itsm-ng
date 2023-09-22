@@ -82,11 +82,14 @@ var GLPIImpact = {
    ACTION_EDIT_DEPENDS_COLOR           : 12,
    ACTION_EDIT_IMPACT_COLOR            : 13,
    ACTION_EDIT_IMPACT_AND_DEPENDS_COLOR: 14,
+   ACTION_EDIT_EDGE_WIDTH              : 15,
 
    // Constans for depth
    DEFAULT_DEPTH: 5,
    MAX_DEPTH: 10,
    NO_DEPTH_LIMIT: 10000,
+
+   DEFAULT_EDGE_WIDTH: 1,
 
    // Store the initial state of the graph
    initialState: null,
@@ -114,6 +117,9 @@ var GLPIImpact = {
 
    // Maximum depth of the graph (default 5)
    maxDepth: this.DEFAULT_DEPTH,
+
+   // Edge Width of the graph (default 1)
+   edgeWidth: this.DEFAULT_EDGE_WIDTH,
 
    // Is the graph readonly ?
    readonly: true,
@@ -151,6 +157,8 @@ var GLPIImpact = {
       toggleDepends        : "#toggle_depends",
       maxDepth             : "#max_depth",
       maxDepthView         : "#max_depth_view",
+      edgeWidth            : "#edge_width",
+      edgeWidthView        : "#edge_width_view",
 
       // Toolbar
       helpText        : "#help_text",
@@ -437,6 +445,13 @@ var GLPIImpact = {
             this.setDepth(data.oldDepth);
             $(GLPIImpact.selectors.maxDepth).val(data.oldDepth);
             break;
+
+         // Set previous value for edge width
+         // Available data: oldWidth, newWidth
+         case this.ACTION_EDIT_EDGE_WIDTH:
+            this.setEdgeWidth(data.oldWidth);
+            $(GLPIImpact.selectors.edgeWidth).val(data.oldWidth);
+            break;
       }
 
       if (this.undoStack.length === 0) {
@@ -668,6 +683,13 @@ var GLPIImpact = {
             this.setDepth(data.newDepth);
             $(GLPIImpact.selectors.maxDepth).val(data.newDepth);
             break;
+         
+         // Set new value for edge width
+         // Available data: oldWidth, newWidth
+         case this.ACTION_EDIT_EDGE_WIDTH:
+            this.setEdgeWidth(data.newWidth);
+            $(GLPIImpact.selectors.edgeWidth).val(data.newWidth);
+            break;
       }
 
       if (this.redoStack.length === 0) {
@@ -797,7 +819,7 @@ var GLPIImpact = {
          {
             selector: 'edge',
             style: {
-               'width'                    : 1,
+               'width'                    : this.edgeWidth,
                'line-color'               : this.edgeColors[0],
                'target-arrow-color'       : this.edgeColors[0],
                'target-arrow-shape'       : 'triangle',
@@ -1527,6 +1549,7 @@ var GLPIImpact = {
 
          // Apply max depth
          this.maxDepth = params.max_depth;
+         this.edgeWidth = this.DEFAULT_EDGE_WIDTH
 
          // Preset layout based on node positions
          layout = this.getPresetLayout(JSON.parse(params.positions));
@@ -1534,6 +1557,7 @@ var GLPIImpact = {
          // Default params if no context was found
          this.setEdgeColors(this.defaultColors);
          this.maxDepth = this.DEFAULT_DEPTH;
+         this.edgeWidth = this.DEFAULT_EDGE_WIDTH
 
          // Procedural layout
          layout = this.getDagreLayout();
@@ -1674,12 +1698,17 @@ var GLPIImpact = {
       this.setEditionMode(GLPIImpact.EDITION_DEFAULT);
 
       // Init depth value
-      var text = GLPIImpact.maxDepth;
+      var depth = GLPIImpact.maxDepth;
       if (GLPIImpact.maxDepth >= GLPIImpact.MAX_DEPTH) {
          text = "infinity";
       }
-      $(GLPIImpact.selectors.maxDepthView).html(text);
+      $(GLPIImpact.selectors.maxDepthView).html(depth);
       $(GLPIImpact.selectors.maxDepth).val(GLPIImpact.maxDepth);
+
+      // Init edge width value
+      var width = GLPIImpact.edgeWidth;
+      $(GLPIImpact.selectors.edgeWidthView).html(width);
+      $(GLPIImpact.selectors.edgeWidth).val(GLPIImpact.edgeWidth);
 
       // Set color widgets default values
       $(GLPIImpact.selectors.dependsColor).val(
@@ -1889,6 +1918,17 @@ var GLPIImpact = {
       }
 
       $(GLPIImpact.selectors.maxDepthView).html(max);
+      GLPIImpact.updateStyle();
+   },
+
+   /**
+    * Set edge width of the graph
+    * @param {Number} width max depth
+    */
+   setEdgeWidth: function(width) {
+      GLPIImpact.edgeWidth = width;
+
+      $(GLPIImpact.selectors.edgeWidthView).html(width);
       GLPIImpact.updateStyle();
    },
 
@@ -3771,6 +3811,17 @@ var GLPIImpact = {
             newDepth: GLPIImpact.maxDepth,
          });
       });
+
+      // Edge width selector
+      $(GLPIImpact.selectors.edgeWidth).on('input', function() {
+         var previous = GLPIImpact.edgeWidth;
+         GLPIImpact.setEdgeWidth($(GLPIImpact.selectors.edgeWidth).val());
+         GLPIImpact.addToUndo(GLPIImpact.ACTION_EDIT_EDGE_WIDTH, {
+            oldWidth: previous,
+            newWidth: GLPIImpact.edgeWidth,
+         });
+      });
+
 
       $(GLPIImpact.selectors.toggleFullscreen).click(function() {
          GLPIImpact.toggleFullscreen();
