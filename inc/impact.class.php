@@ -1460,14 +1460,14 @@ class Impact extends CommonGLPI {
                   'zoom'                     => 1,
                   'pan_x'                    => 1,
                   'pan_y'                    => 1,
-                  'show_depends'             => 1,
-                  'show_impact'              => 1,
                   'max_depth'                => 1,
                ]
             );
             $params['impact_color'] = $CFG_GLPI[self::CONF_IMPACT_COLOR];
             $params['depends_color'] = $CFG_GLPI[self::CONF_DEPENDS_COLOR];
             $params['impact_and_depends_color'] = $CFG_GLPI[self::CONF_IMPACT_DEPENDS_COLOR];
+            $params['show_depends'] = 1;
+            $params['show_impact'] = 1;
          }
       }
 
