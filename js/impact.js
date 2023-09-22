@@ -1874,7 +1874,6 @@ var GLPIImpact = {
       // Update visibility setting
       GLPIImpact.directionVisibility[toToggle] = !GLPIImpact.directionVisibility[toToggle];
       GLPIImpact.updateFlags();
-      GLPIImpact.cy.trigger("change");
    },
 
    /**
@@ -1891,7 +1890,6 @@ var GLPIImpact = {
 
       $(GLPIImpact.selectors.maxDepthView).html(max);
       GLPIImpact.updateStyle();
-      GLPIImpact.cy.trigger("change");
    },
 
    /**
@@ -3851,7 +3849,6 @@ var GLPIImpact = {
             backward: $(GLPIImpact.selectors.dependsColor).val(),
          });
          GLPIImpact.updateStyle();
-         GLPIImpact.cy.trigger("change");
          GLPIImpact.addToUndo(GLPIImpact.ACTION_EDIT_DEPENDS_COLOR, {
             oldColor: previous,
             newColor: GLPIImpact.edgeColors[GLPIImpact.BACKWARD]
@@ -3865,7 +3862,6 @@ var GLPIImpact = {
             forward: $(GLPIImpact.selectors.impactColor).val(),
          });
          GLPIImpact.updateStyle();
-         GLPIImpact.cy.trigger("change");
          GLPIImpact.addToUndo(GLPIImpact.ACTION_EDIT_IMPACT_COLOR, {
             oldColor: previous,
             newColor: GLPIImpact.edgeColors[GLPIImpact.FORWARD]
@@ -3879,7 +3875,6 @@ var GLPIImpact = {
             both: $(GLPIImpact.selectors.impactAndDependsColor).val(),
          });
          GLPIImpact.updateStyle();
-         GLPIImpact.cy.trigger("change");
          GLPIImpact.addToUndo(GLPIImpact.ACTION_EDIT_IMPACT_AND_DEPENDS_COLOR, {
             oldColor: previous,
             newColor: GLPIImpact.edgeColors[GLPIImpact.BOTH]
