@@ -45,10 +45,10 @@ class Impact extends CommonGLPI {
    const DIRECTION_BACKWARD   = 0b10;
 
    // Default colors used for the edges of the graph according to their flow
-   const DEFAULT_COLOR            = 'black';   // The edge is not accessible from the starting point of the graph
-   const IMPACT_COLOR             = '#ff3418'; // Forward
-   const DEPENDS_COLOR            = '#1c76ff'; // Backward
-   const IMPACT_AND_DEPENDS_COLOR = '#ca29ff'; // Forward and backward
+   const DEFAULT_COLOR           = 'black';   // The edge is not accessible from the starting point of the graph
+   const IMPACT_COLOR            = '#ff3418'; // Forward
+   const DEPENDS_COLOR           = '#1c76ff'; // Backward
+   const IMPACT_DEPENDS_COLOR    = '#ca29ff'; // Forward and backward
 
    const NODE_ID_DELIMITER = "::";
    const EDGE_ID_DELIMITER = "->";
@@ -60,6 +60,10 @@ class Impact extends CommonGLPI {
 
    // Config values
    const CONF_ENABLED = 'impact_enabled_itemtypes';
+   const CONF_DEFAULT_COLOR = 'impact_default_color';
+   const CONF_IMPACT_COLOR = 'impact_impact_color';
+   const CONF_DEPENDS_COLOR = 'impact_depends_color';
+   const CONF_IMPACT_DEPENDS_COLOR = 'impact_impact_depends_color';
 
    public static function getTypeName($nb = 0) {
       return __('Impact analysis');
@@ -1435,6 +1439,7 @@ class Impact extends CommonGLPI {
     * @return string $item
     */
    public static function prepareParams(CommonDBTM $item) {
+      global $CFG_GLPI;
       $impact_item = ImpactItem::findForItem($item);
 
       $params = array_intersect_key($impact_item->fields, [
@@ -1455,14 +1460,14 @@ class Impact extends CommonGLPI {
                   'zoom'                     => 1,
                   'pan_x'                    => 1,
                   'pan_y'                    => 1,
-                  'impact_color'             => 1,
-                  'depends_color'            => 1,
-                  'impact_and_depends_color' => 1,
                   'show_depends'             => 1,
                   'show_impact'              => 1,
                   'max_depth'                => 1,
                ]
             );
+            $params['impact_color'] = $CFG_GLPI[self::CONF_IMPACT_COLOR];
+            $params['depends_color'] = $CFG_GLPI[self::CONF_DEPENDS_COLOR];
+            $params['impact_and_depends_color'] = $CFG_GLPI[self::CONF_IMPACT_DEPENDS_COLOR];
          }
       }
 
@@ -1547,9 +1552,12 @@ class Impact extends CommonGLPI {
     *
     * @since 9.5
     *
+    * @global CFG_GLPI
     * @param CommonDBTM $item The specified item
     */
    public static function prepareImpactNetwork(CommonDBTM $item) {
+      global $CFG_GLPI;
+
       // Load requirements
       self::printImpactNetworkContainer();
       self::printShowOngoingDialog();
@@ -1557,10 +1565,10 @@ class Impact extends CommonGLPI {
       echo Html::script("js/impact.js");
 
       // Load backend values
-      $default   = self::DEFAULT_COLOR;
-      $forward   = self::IMPACT_COLOR;
-      $backward  = self::DEPENDS_COLOR;
-      $both      = self::IMPACT_AND_DEPENDS_COLOR;
+      $default   = $CFG_GLPI[self::CONF_DEFAULT_COLOR];
+      $forward   = $CFG_GLPI[self::CONF_IMPACT_COLOR];
+      $backward  = $CFG_GLPI[self::CONF_DEPENDS_COLOR];
+      $both      = $CFG_GLPI[self::CONF_IMPACT_DEPENDS_COLOR];
       $start_node = self::getNodeID($item);
 
       // Bind the backend values to the client and start the network
@@ -1773,47 +1781,77 @@ class Impact extends CommonGLPI {
     */
    public static function showConfigForm() {
       global $CFG_GLPI;
-
-      // Form head
+      
+      $csrf_token = Session::getNewCSRFToken();
       $action = Toolbox::getItemTypeFormURL(Config::getType());
-      echo "<form name='form' action='$action' method='post'>";
+ 
+      $header_label = __('Impact analysis configuration');
+      $enabled_itemtype_label = __('Enabled itemtypes');
+      $save_label = __('Save');
 
-      // Table head
-      echo '<table class="tab_cadre_fixe">';
-      echo '<tr><th colspan="2">' . __('Impact analysis configuration') . '</th></tr>';
-
-      // First row: enabled itemtypes
-      $input_name = self::CONF_ENABLED;
+      $enabled_itemtype_inputname = self::CONF_ENABLED;
+      $core_config = Config::getConfigurationValues("core");
+      
+      // enabled itemtype array
+      $db_values = importArrayFromDB($core_config[$enabled_itemtype_inputname]);
       $values = $CFG_GLPI["impact_asset_types"];
-      foreach ($values as $itemtype => $icon) {
+      foreach (array_keys($values) as $itemtype) {
          $values[$itemtype]= $itemtype::getTypeName();
       }
-      echo '<tr class="tab_bg_2">';
-
-      echo '<td width="40%">';
-      echo "<label for='$input_name'>";
-      echo __('Enabled itemtypes');
-      echo '</label>';
-      echo '</td>';
-
-      $core_config = Config::getConfigurationValues("core");
-      $db_values = importArrayFromDB($core_config[self::CONF_ENABLED]);
-      echo '<td>';
-      Dropdown::showFromArray($input_name, $values, [
+      ob_start();
+      Dropdown::showFromArray($enabled_itemtype_inputname, $values, [
          'multiple' => true,
          'values'   => $db_values
       ]);
-      echo "</td>";
+      $itemtype_array = ob_get_clean();
 
-      echo "</tr>";
+      // edge color pickers
+      $edgecolor_label = [
+         self::CONF_DEFAULT_COLOR => __('Default'),
+         self::CONF_IMPACT_COLOR => __('Impact'),
+         self::CONF_DEPENDS_COLOR => __('Depends'),
+         self::CONF_IMPACT_DEPENDS_COLOR => __('Impact and depends'),
+      ];
+      $edgecolors_values = [
+         self::CONF_DEFAULT_COLOR => $core_config[self::CONF_DEFAULT_COLOR],
+         self::CONF_IMPACT_COLOR => $core_config[self::CONF_IMPACT_COLOR],
+         self::CONF_DEPENDS_COLOR => $core_config[self::CONF_DEPENDS_COLOR],
+         self::CONF_IMPACT_DEPENDS_COLOR => $core_config[self::CONF_IMPACT_DEPENDS_COLOR],
+      ];
+      ob_start();
+      foreach ($edgecolors_values as $edgecolor => $value) {
+         echo <<<HTML
+         <tr>
+            <td>
+               <label for='$edgecolor'>$edgecolor_label[$edgecolor]</label>
+            </td>
+            <td>
+               <input type='color' name='$edgecolor' value='$value'/>
+            </td>
+         </tr>
+         HTML;
+      }
+      $colorpickers = ob_get_clean();
 
-      echo '</table>';
-
-      // Submit button
-      echo '<div style="text-align:center">';
-      echo Html::submit(__('Save'), ['name' => 'update']);
-      echo '</div>';
-
+      echo <<<HTML
+         <form name='form' action='$action' method='post'>
+            <table class="tab_cadre_fixe">
+               <tr><th colspan="2">$header_label</th></tr>
+               <tr class="tab_bg_2">
+                  <td width="40%">
+                     <label for='$enabled_itemtype_inputname'>$enabled_itemtype_label</label>
+                  </td>
+                  <td>
+                     $itemtype_array
+                  </td>
+               </tr>
+               $colorpickers
+            </table>
+            <div style="text-align:center">
+               <input class='submit' type='submit' title='$save_label' name='update'/>
+            </div>
+            <input type='hidden' name='_glpi_csrf_token' value='$csrf_token'>
+      HTML;
       Html::closeForm();
    }
 }
