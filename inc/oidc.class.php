@@ -187,6 +187,10 @@ class Oidc extends CommonDBTM
       $auth->user = $user;
       //Setup a new session and redirect to the main menu
       $redirect = $_COOKIE['OIDC_REDIRECT'] ?? null;
+      if (isset($_COOKIE['OIDC_REDIRECT'])) {
+        unset($_COOKIE['OIDC_REDIRECT']);
+        setcookie('OIDC_REDIRECT', null, -1, '/');
+      }
       Session::init($auth);
       $_SESSION['itsm_is_oidc'] = 1;
       $_SESSION['itsm_oidc_idtoken'] = $oidc->getIdToken();
